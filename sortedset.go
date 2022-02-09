@@ -307,6 +307,7 @@ func (this *SortedSet) GetByScoreRange(start SCORE, end SCORE, options *GetBySco
 	}
 	//////////////////////////
 
+	var update [SKIPLIST_MAXLEVEL]*SortedSetNode
 	if reverse { // search from end to start
 		x := this.header
 
@@ -316,6 +317,7 @@ func (this *SortedSet) GetByScoreRange(start SCORE, end SCORE, options *GetBySco
 					x.level[i].forward.score < end {
 					x = x.level[i].forward
 				}
+				update[i] = x
 			}
 		} else {
 			for i := this.level - 1; i >= 0; i-- {
@@ -323,6 +325,7 @@ func (this *SortedSet) GetByScoreRange(start SCORE, end SCORE, options *GetBySco
 					x.level[i].forward.score <= end {
 					x = x.level[i].forward
 				}
+				update[i] = x
 			}
 		}
 
@@ -343,7 +346,7 @@ func (this *SortedSet) GetByScoreRange(start SCORE, end SCORE, options *GetBySco
 			limit--
 
 			if remove {
-				this.delete(x.score, x.key)
+				this.deleteNode(x, update)
 			}
 
 			x = next
@@ -357,6 +360,7 @@ func (this *SortedSet) GetByScoreRange(start SCORE, end SCORE, options *GetBySco
 					x.level[i].forward.score <= start {
 					x = x.level[i].forward
 				}
+				update[i] = x
 			}
 		} else {
 			for i := this.level - 1; i >= 0; i-- {
@@ -364,6 +368,7 @@ func (this *SortedSet) GetByScoreRange(start SCORE, end SCORE, options *GetBySco
 					x.level[i].forward.score < start {
 					x = x.level[i].forward
 				}
+				update[i] = x
 			}
 		}
 
@@ -387,7 +392,7 @@ func (this *SortedSet) GetByScoreRange(start SCORE, end SCORE, options *GetBySco
 			limit--
 
 			if remove {
-				this.delete(x.score, x.key)
+				this.deleteNode(x, update)
 			}
 
 			x = next
